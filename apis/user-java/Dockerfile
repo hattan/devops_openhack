@@ -4,6 +4,9 @@ ADD ./pom.xml pom.xml
 ADD ./src src/
 RUN mvn clean package
 
+#Unit Tests
+RUN mvn test
+
 # build runtime image
 FROM openjdk:11-jre-slim
 
