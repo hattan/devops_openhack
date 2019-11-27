@@ -3,7 +3,12 @@ variables:
   imageName: 'devopsoh/api-user'
 
 trigger:
-- master
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - '/apis/userprofile/*'
 
 pool: 'custom'
 
