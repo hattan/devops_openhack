@@ -22,6 +22,9 @@ public class Healthcheck   {
   @JsonProperty("status")
   private String status = null;
 
+  @JsonProperty("version")
+  private String version = null;
+
   public Healthcheck message(String message) {
     this.message = message;
     return this;
@@ -61,6 +64,23 @@ public class Healthcheck   {
   public void setStatus(String status) {
     this.status = status;
   }
+
+
+  /**
+   * 
+   * @return version
+  **/
+  @ApiModelProperty(value = "")
+
+
+  public String getVersion() {
+    return version;
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
+  }
+
 
 
   @Override
