@@ -47,8 +47,7 @@ stages:
         kubernetesCluster: openhackxmk9aks
         command: upgrade
         chartType: FilePath
-        chartPath: '$(chartPath)'
+        chartPath: '$(Pipeline.Workspace)/trips'
         releaseName: '$(releaseName)'
-        overrideValues: '$(setValues)'
+        overrideValues: $(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'
         arguments: '--reuse-values' 
-
