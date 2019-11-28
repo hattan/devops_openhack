@@ -11,7 +11,7 @@ steps:
     kubernetesCluster: openhackxmk9aks
     command: login
 - bash: |
-  currentSlot=`(helm get values --all $(releaseName) | grep -Po 'productionSlot: \K.*')`
+  currentSlot=`(helm get values --all ${{ parameters.releaseName }} | grep -Po 'productionSlot: \K.*')`
   if [ "$currentSlot" == "blue" ]; then
        newSlot="green"
   else
