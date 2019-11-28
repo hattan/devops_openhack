@@ -2,4 +2,11 @@ parameters:
   releaseName: 'release'  # defaults for any parameters that aren't specified
 
 steps:
-- script: 'echo ${{ parameters.releaseName }}'
+- task: Kubernetes@1
+  displayName: 'kubectl login'
+  inputs:
+    connectionType: 'Azure Resource Manager'
+    azureSubscriptionEndpoint: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
+    azureResourceGroup: openhackxmk9rg
+    kubernetesCluster: openhackxmk9aks
+    command: login
