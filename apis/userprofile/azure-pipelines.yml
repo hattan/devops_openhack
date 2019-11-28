@@ -9,34 +9,16 @@ trigger:
     include:
     - '/apis/userprofile/*'
 
-- stage: Build
+stages:
+- stage: A
   jobs:
-- job: Build
+  - job: A1
     pool: 'custom'
-  steps:
-  - task: Docker@2
-    displayName: build $(imageName) image
-    inputs:
-      containerRegistry: ACR
-      repository: $(imageName)
-      command: build
-      Dockerfile: 'apis/userprofile/Dockerfile'
-  - task: Docker@2
-    displayName: push $(imageName) image to ACR
-    inputs:
-      containerRegistry: ACR
-      repository: $(imageName)
-      command: push
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
-    inputs:
-      PathtoPublish: 'apis/userprofile/charts/mydrive-user'  
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-
-- stage: Deploy
+    steps:
+    - script: 'echo hello world'
+- stage: B
   jobs:
-- job: Deploy
+  - job: B1
     pool: 'custom'
-  steps:
-  - script: echo my first deployment
+    steps:
+    - script: 'echo hello world2'
