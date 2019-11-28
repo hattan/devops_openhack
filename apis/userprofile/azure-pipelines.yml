@@ -19,9 +19,7 @@ stages:
     steps:
     - publish: $(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user
       artifact: trips
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))    
 - stage: Deploy
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))    
   jobs:
   - job: Deploy
     pool: 'custom'
