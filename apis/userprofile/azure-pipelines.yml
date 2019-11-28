@@ -45,7 +45,7 @@ stages:
       inputs:
         helmVersion: 2.14.3
         checkLatestHelmVersion: false
-    - template: templates/steps-with-params.yml  # Template reference
+    - template: templates/read_slots.yml  # Template reference
       parameters:
         releaseName: $(releaseName)
 
