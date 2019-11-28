@@ -11,5 +11,5 @@ steps:
     kubernetesCluster: openhackxmk9aks
     command: login
 - script:| 
-  'echo "hello world"'
+    echo "hello world"
   
