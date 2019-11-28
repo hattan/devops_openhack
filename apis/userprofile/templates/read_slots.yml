@@ -18,4 +18,6 @@ steps:
     else
       newSlot="blue"
     fi
+    echo "##vso[task.setvariable variable=currentSlot]$currentSlot"
+    echo "##vso[task.setvariable variable=newSlot]$newSlot"
   
