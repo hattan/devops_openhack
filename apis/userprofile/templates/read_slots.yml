@@ -13,9 +13,9 @@ steps:
 - bash: |
   currentSlot=`(helm get values --all ${{ parameters.releaseName }} | grep -Po 'productionSlot: \K.*')`
   if [ "$currentSlot" == "blue" ]; then
-       newSlot="green"
+  newSlot="green"
   else
-       newSlot="blue"
+  newSlot="blue"
   fi
    
   echo "##vso[task.setvariable variable=currentSlot]$currentSlot"
