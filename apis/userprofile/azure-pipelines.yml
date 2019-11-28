@@ -41,7 +41,10 @@ stages:
     pool: 'custom'
     steps:
     - download: current
-      artifact: trips    
+      artifact: trips 
+    - template: templates/read_slots.yml  # Template reference
+      parameters:
+        releaseName: $(releaseName)         
     - task: HelmInstaller@0
       displayName: 'Install Helm 2.14.3'
       inputs:
