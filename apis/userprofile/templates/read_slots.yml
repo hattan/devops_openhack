@@ -12,4 +12,5 @@ steps:
     command: login
 - bash: | 
     echo "hello world"
+    currentSlot=`(helm get values --all ${{releaseName}} | grep -Po 'productionSlot: \K.*')`
   
