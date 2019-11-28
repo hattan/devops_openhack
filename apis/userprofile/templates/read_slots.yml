@@ -11,7 +11,7 @@ steps:
     kubernetesCluster: openhackxmk9aks
     command: login
 - bash: |
-  currentSlot=`(helm get values --all ${{ parameters.releaseName }} | grep -Po 'productionSlot: \K.*')`
+  'currentSlot=`(helm get values --all ${{ parameters.releaseName }} | grep -Po 'productionSlot: \K.*')`
   if [ "$currentSlot" == "blue" ]; then
        newSlot="green"
   else
@@ -19,5 +19,5 @@ steps:
   fi
    
   echo "##vso[task.setvariable variable=currentSlot]$currentSlot"
-  echo "##vso[task.setvariable variable=newSlot]$newSlot"
+  echo "##vso[task.setvariable variable=newSlot]$newSlot"'
   
