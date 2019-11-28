@@ -63,7 +63,7 @@ stages:
         
         echo "##vso[task.setvariable variable=currentSlot]$currentSlot"
         echo "##vso[task.setvariable variable=newSlot]$newSlot"
-        displayName: 'Read Slots'
+      displayName: 'Read Slots'
     - script: 'echo "currentSlot: $(currentSlot)"'      
     - script: 'echo "newSlot: $(newSlot)"'      
 
