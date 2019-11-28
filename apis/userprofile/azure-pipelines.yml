@@ -17,15 +17,6 @@ stages:
   - job: Build
     pool: 'custom'
     steps:
-    - publish: $(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user
-      artifact: trips
-- stage: Deploy
-  jobs:
-  - job: Deploy
-    pool: 'custom'
-    steps:
-    - download: current
-      artifact: trips    
     - task: Docker@2
       displayName: build $(imageName) image
       inputs:
@@ -41,7 +32,16 @@ stages:
         command: push      
     - template: templates/read_slots.yml  # Template reference
       parameters:
-        releaseName: $(releaseName)
+        releaseName: $(releaseName)    
+    - publish: $(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user
+      artifact: trips
+- stage: Deploy
+  jobs:
+  - job: Deploy
+    pool: 'custom'
+    steps:
+    - download: current
+      artifact: trips    
     - task: HelmInstaller@0
       displayName: 'Install Helm 2.14.3'
       inputs:
