@@ -10,6 +10,5 @@ steps:
     azureResourceGroup: openhackxmk9rg
     kubernetesCluster: openhackxmk9aks
     command: login
-- bash: |
-  echo "hello world"
+- script: 'echo "hello world"'
   
