@@ -1,6 +1,7 @@
-
 variables:
   imageName: 'devopsoh/api-user'
+  releaseName : 'api-user'
+  chartPath: 
 
 trigger:
   branches:
@@ -10,25 +11,59 @@ trigger:
     include:
     - '/apis/userprofile/*'
 
-pool: 'custom'
-
-steps:
-- task: Docker@2
-  displayName: build $(imageName) image
-  inputs:
-    containerRegistry: ACR
-    repository: $(imageName)
-    command: build
-    Dockerfile: 'apis/userprofile/Dockerfile'
-- task: Docker@2
-  displayName: push $(imageName) image to ACR
-  inputs:
-    containerRegistry: ACR
-    repository: $(imageName)
-    command: push
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: drop'
-  inputs:
-    PathtoPublish: 'apis/userprofile/charts/mydrive-user'  
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool: 'custom'
+    steps:
+    - task: Docker@2
+      displayName: build $(imageName) image
+      inputs:
+        containerRegistry: ACR
+        repository: $(imageName)
+        command: build
+        Dockerfile: 'apis/userprofile/Dockerfile'
+    - task: Docker@2
+      displayName: push $(imageName) image to ACR
+      inputs:
+        containerRegistry: ACR
+        repository: $(imageName)
+        command: push      
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+    - publish: $(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user
+      artifact: trips
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+- stage: Deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - job: Deploy
+    pool: 'custom'
+    steps:
+    - download: current
+      artifact: trips 
+    - template: templates/read_slots.yml  # Template reference
+      parameters:
+        releaseName: $(releaseName)         
+    - task: HelmInstaller@0
+      displayName: 'Install Helm 2.14.3'
+      inputs:
+        helmVersion: 2.14.3
+        checkLatestHelmVersion: false
+    - task: HelmInstaller@0
+      displayName: 'Install Helm 2.14.3'
+      inputs:
+        helmVersion: 2.14.3
+        checkLatestHelmVersion: false        
+    - task: HelmDeploy@0
+      displayName: 'Helm Upgrade'
+      inputs:
+        azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
+        azureResourceGroup: openhackxmk9rg
+        kubernetesCluster: openhackxmk9aks
+        command: upgrade
+        chartType: FilePath
+        chartPath: '$(Pipeline.Workspace)/trips'
+        releaseName: '$(releaseName)'
+        overrideValues: $(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'
+        arguments: '--reuse-values' 
