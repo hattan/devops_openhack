@@ -30,12 +30,12 @@ stages:
         containerRegistry: ACR
         repository: $(imageName)
         command: push      
-    - template: templates/read_slots.yml  # Template reference
-      parameters:
-        releaseName: $(releaseName)    
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
     - publish: $(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user
       artifact: trips
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
 - stage: Deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - job: Deploy
     pool: 'custom'
