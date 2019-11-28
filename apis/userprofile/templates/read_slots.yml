@@ -14,8 +14,8 @@ steps:
     echo "hello world"
     currentSlot=`(helm get values --all ${{ parameters.releaseName }} | grep -Po 'productionSlot: \K.*')`
     if [ "$currentSlot" == "blue" ]; then
-       newSlot="green"
-   else
-       newSlot="blue"
-   fi
+      newSlot="green"
+    else
+      newSlot="blue"
+    fi
   
