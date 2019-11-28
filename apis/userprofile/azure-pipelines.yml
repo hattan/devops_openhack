@@ -1,6 +1,6 @@
 variables:
   imageName: 'devopsoh/api-user'
-  releaseName : 'api-trip'
+  releaseName : 'api-user'
   chartPath: 
 
 trigger:
