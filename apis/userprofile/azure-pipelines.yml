@@ -17,20 +17,6 @@ stages:
   - job: Build
     pool: 'custom'
     steps:
-    - task: Docker@2
-      displayName: build $(imageName) image
-      inputs:
-        containerRegistry: ACR
-        repository: $(imageName)
-        command: build
-        Dockerfile: 'apis/userprofile/Dockerfile'
-    - task: Docker@2
-      displayName: push $(imageName) image to ACR
-      inputs:
-        containerRegistry: ACR
-        repository: $(imageName)
-        command: push
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     - publish: $(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user
       artifact: trips
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))    
