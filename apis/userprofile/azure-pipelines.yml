@@ -116,6 +116,7 @@ stages:
   condition: and(failed(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: cleanup
+    environment: 'Rollback'
     pool: 'custom'
     strategy:
      runOnce:
