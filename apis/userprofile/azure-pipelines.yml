@@ -68,6 +68,7 @@ stages:
             arguments: '--reuse-values' 
   - deployment: production
     environment: 'UserProfile Production'
+    dependsOn: staging
     pool: 'custom'
     strategy:
      runOnce:
