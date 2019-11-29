@@ -97,7 +97,7 @@ stages:
             releaseName: '$(releaseName)'
             overrideValues: 'productionSlot=$(newSlot)'
             arguments: '--reuse-values'   
-- stage: Finalize
+- stage: Cleanup
   condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: cleanup
@@ -108,15 +108,10 @@ stages:
       deploy:
         steps:
         - script: 'echo "ok we are good"'
-      on:
-        failure:
-          steps:
-          - script: 'echo "rollback"'
 - stage: Rollback
   condition: and(failed(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: cleanup
-    environment: 'UserProfile Finalize Deployment'
     pool: 'custom'
     strategy:
      runOnce:
