@@ -108,6 +108,10 @@ stages:
       deploy:
         steps:
         - script: 'echo "ok we are good"'
+      on:
+        failure:
+          steps:
+          - script: 'echo "rollback"'
 - stage: Rollback
   condition: and(failed(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
