@@ -98,7 +98,7 @@ stages:
             overrideValues: 'productionSlot=$(newSlot)'
             arguments: '--reuse-values'   
 - stage: Finalize
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: cleanup
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -108,28 +108,8 @@ stages:
      runOnce:
       deploy:
         steps:
-        - download: current
-          artifact: trips 
-        - template: templates/read_slots.yml  
-          parameters:
-            releaseName: $(releaseName)  
-        - task: HelmInstaller@0
-          displayName: 'Install Helm 2.14.3'
-          inputs:
-            helmVersion: 2.14.3
-            checkLatestHelmVersion: false        
-        - task: HelmDeploy@0
-          displayName: 'Swap Slots'
-          inputs:
-            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
-            azureResourceGroup: openhackxmk9rg
-            kubernetesCluster: openhackxmk9aks
-            command: upgrade
-            chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/trips'
-            releaseName: '$(releaseName)'
-            overrideValues: '$(newSlot).enabled=false'
-            arguments: '--reuse-values'   
+        - script: 'echo "ok we are good"'
+        
   - deployment: rollback
     condition: and(failed(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     environment: 'UserProfile Finalize Deployment'
@@ -138,25 +118,4 @@ stages:
      runOnce:
       deploy:
         steps:
-        - download: current
-          artifact: trips 
-        - template: templates/read_slots.yml  
-          parameters:
-            releaseName: $(releaseName)  
-        - task: HelmInstaller@0
-          displayName: 'Install Helm 2.14.3'
-          inputs:
-            helmVersion: 2.14.3
-            checkLatestHelmVersion: false        
-        - task: HelmDeploy@0
-          displayName: 'Swap Slots'
-          inputs:
-            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
-            azureResourceGroup: openhackxmk9rg
-            kubernetesCluster: openhackxmk9aks
-            command: upgrade
-            chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/trips'
-            releaseName: '$(releaseName)'
-            overrideValues: 'productionSlot=$(newSlot)'
-            arguments: '--reuse-values'  
+        - script: 'echo "rollback"'
