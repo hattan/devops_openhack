@@ -1,7 +1,6 @@
 variables:
   imageName: 'devopsoh/api-user'
   releaseName : 'api-user'
-  chartPath: 
 
 trigger:
   branches:
@@ -34,7 +33,7 @@ stages:
     - publish: $(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user
       artifact: trips
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
-- stage: Deploy
+- stage: Staging
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: staging
@@ -66,9 +65,11 @@ stages:
             releaseName: '$(releaseName)'
             overrideValues: '$(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'
             arguments: '--reuse-values' 
+stage: Production
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
   - deployment: production
     environment: 'UserProfile Production'
-    dependsOn: staging
     pool: 'custom'
     strategy:
      runOnce:
@@ -95,4 +96,4 @@ stages:
             chartPath: '$(Pipeline.Workspace)/trips'
             releaseName: '$(releaseName)'
             overrideValues: 'productionSlot=$(newSlot)'
-            arguments: '--reuse-values'             
+            arguments: '--reuse-values'                       
