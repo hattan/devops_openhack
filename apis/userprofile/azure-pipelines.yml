@@ -1,7 +1,6 @@
 variables:
   imageName: 'devopsoh/api-user'
   releaseName : 'api-user'
-  chartPath: 
 
 trigger:
   branches:
@@ -66,33 +65,15 @@ stages:
             releaseName: '$(releaseName)'
             overrideValues: '$(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'
             arguments: '--reuse-values' 
-  - deployment: production
-    environment: 'UserProfile Production'
-    dependsOn: staging
+- stage: DeployProd
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: staging
+    environment: 'UserProfile Staging'
     pool: 'custom'
     strategy:
      runOnce:
       deploy:
         steps:
-        - download: current
-          artifact: trips 
-        - template: templates/read_slots.yml  
-          parameters:
-            releaseName: $(releaseName)         
-        - task: HelmInstaller@0
-          displayName: 'Install Helm 2.14.3'
-          inputs:
-            helmVersion: 2.14.3
-            checkLatestHelmVersion: false        
-        - task: HelmDeploy@0
-          displayName: 'Swap Slots'
-          inputs:
-            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
-            azureResourceGroup: openhackxmk9rg
-            kubernetesCluster: openhackxmk9aks
-            command: upgrade
-            chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/trips'
-            releaseName: '$(releaseName)'
-            overrideValues: 'productionSlot=$(newSlot)'
-            arguments: '--reuse-values'             
+        - script: 'echo hello world'
+              
