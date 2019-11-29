@@ -101,7 +101,6 @@ stages:
   condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: cleanup
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     environment: 'UserProfile Finalize Deployment'
     pool: 'custom'
     strategy:
@@ -109,13 +108,7 @@ stages:
       deploy:
         steps:
         - script: 'echo "ok we are good"'
-        
-  - deployment: rollback
-    condition: and(failed(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-    environment: 'UserProfile Finalize Deployment'
-    pool: 'custom'
-    strategy:
-     runOnce:
-      deploy:
-        steps:
-        - script: 'echo "rollback"'
+      on:
+        failure:
+          steps:
+          - script: 'echo "rollback"'
