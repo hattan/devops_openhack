@@ -97,7 +97,7 @@ stages:
             releaseName: '$(releaseName)'
             overrideValues: 'productionSlot=$(newSlot)'
             arguments: '--reuse-values'   
-- stage: Cleanup
+- stage: Finalize
   condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: cleanup
