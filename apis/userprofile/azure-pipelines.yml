@@ -64,4 +64,16 @@ stages:
             chartPath: '$(Pipeline.Workspace)/trips'
             releaseName: '$(releaseName)'
             overrideValues: '$(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'
-            arguments: '--reuse-values'               
+            arguments: '--reuse-values' 
+- stage: Deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: staging
+    environment: 'UserProfile Staging'
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - script: 'echo hello world'
+              
