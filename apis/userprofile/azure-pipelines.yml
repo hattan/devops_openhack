@@ -5,6 +5,7 @@ variables:
   chartPath: '$(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user'
   stagingEnvironment: 'UserProfile Staging'
   productionEnvironment: 'UserProfile Production'
+  finalizeEnvironment: 'UserProfile Finalize Deployment'
   artifactName: 'trips'
 
 trigger:
@@ -59,7 +60,7 @@ stages:
             helmVersion: 2.14.3
             checkLatestHelmVersion: false        
         - task: HelmDeploy@0
-          displayName: 'Deploy $(newSlot) to Staging'
+          displayName: 'Deploy to Staging'
           inputs:
             azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
             azureResourceGroup: openhackxmk9rg
@@ -106,7 +107,7 @@ stages:
   condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: cleanup
-    environment: 'UserProfile Finalize Deployment'
+    environment: $(finalizeEnvironment)
     pool: 'custom'
     strategy:
      runOnce:
