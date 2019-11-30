@@ -17,7 +17,7 @@ module.exports = {
             res.json({
                 message: 'healthcheck',
                 status: 'healthy12',
-                version: 'hattan-v7'
+                version: 'hattan-v8'
             });
             callback;
         },
