@@ -9,7 +9,7 @@ func healthcheckGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
-	hc := &Healthcheck{Message: "Trip Service Healthcheck", Status: "Healthy", Version: "hattan-v5"}
+	hc := &Healthcheck{Message: "Trip Service Healthcheck", Status: "Healthy", Version: "hattan-v6"}
 
 	json.NewEncoder(w).Encode(hc)
 }
