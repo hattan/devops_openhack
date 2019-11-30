@@ -56,7 +56,6 @@ stages:
             releaseName: $(releaseName)     
         - template: ../build/templates/helm_upgrade.yml 
           parameters:
-            displayName: 'Deploy to Staging'
             releaseName: $(releaseName)   
             artifactName:  $(artifactName) 
             chartPath: '$(Pipeline.Workspace)/$(artifactName)'    
@@ -78,7 +77,6 @@ stages:
             releaseName: $(releaseName)  
         - template: ../build/templates/helm_upgrade.yml 
           parameters:
-            displayName: 'Swap Slots'
             releaseName: $(releaseName)   
             artifactName:  $(artifactName) 
             chartPath: '$(Pipeline.Workspace)/$(artifactName)'    
@@ -100,7 +98,6 @@ stages:
             releaseName: $(releaseName) 
         - template: ../build/templates/helm_upgrade.yml 
           parameters:
-            displayName: 'Remove Stage'
             releaseName: $(releaseName)   
             artifactName:  $(artifactName) 
             chartPath: '$(Pipeline.Workspace)/$(artifactName)'    
@@ -126,7 +123,6 @@ stages:
             releaseName: $(releaseName) 
         - template: ../build/templates/helm_upgrade.yml 
           parameters:
-            displayName: 'Rollback'
             releaseName: $(releaseName)   
             artifactName:  $(artifactName) 
             chartPath: '$(Pipeline.Workspace)/$(artifactName)'    
