@@ -1,0 +1,24 @@
+parameters:
+  releaseName: 'release'  # defaults for any parameters that aren't specified
+  artifactName: 'artifact'
+  chartPath: 'path'
+  setValues: 'values'
+  
+steps:
+- task: HelmInstaller@0
+  displayName: 'Install Helm 2.14.3'
+  inputs:
+    helmVersion: 2.14.3
+    checkLatestHelmVersion: false        
+- task: HelmDeploy@0
+  displayName: 'Swap Slots'
+  inputs:
+    azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
+    azureResourceGroup: openhackxmk9rg
+    kubernetesCluster: openhackxmk9aks
+    command: upgrade
+    chartType: FilePath
+    chartPath: '${{ parameters.chartPath }}'
+    releaseName: '${{ parameters.releaseName }}'
+    overrideValues: ${{ parameters.setValues }}
+    arguments: '--reuse-values' 

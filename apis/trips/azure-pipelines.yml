@@ -53,24 +53,13 @@ stages:
           artifact: $(artifactName) 
         - template: ../build/templates/read_slots.yml  # Template reference
           parameters:
-            releaseName: $(releaseName)         
-        - task: HelmInstaller@0
-          displayName: 'Install Helm 2.14.3'
-          inputs:
-            helmVersion: 2.14.3
-            checkLatestHelmVersion: false        
-        - task: HelmDeploy@0
-          displayName: 'Deploy to Staging'
-          inputs:
-            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
-            azureResourceGroup: openhackxmk9rg
-            kubernetesCluster: openhackxmk9aks
-            command: upgrade
-            chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
-            releaseName: '$(releaseName)'
-            overrideValues: '$(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'
-            arguments: '--reuse-values' 
+            releaseName: $(releaseName)     
+        - template: ../build/templates/helm_upgrade.yml 
+          parameters:
+            releaseName: $(releaseName)   
+            artifactName:  $(artifactName) 
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'    
+            setValues: '$(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'     
 - stage: Production
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
@@ -85,24 +74,13 @@ stages:
           artifact: $(artifactName) 
         - template: ../build/templates/read_slots.yml 
           parameters:
-            releaseName: $(releaseName)         
-        - task: HelmInstaller@0
-          displayName: 'Install Helm 2.14.3'
-          inputs:
-            helmVersion: 2.14.3
-            checkLatestHelmVersion: false        
-        - task: HelmDeploy@0
-          displayName: 'Swap Slots'
-          inputs:
-            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
-            azureResourceGroup: openhackxmk9rg
-            kubernetesCluster: openhackxmk9aks
-            command: upgrade
-            chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
-            releaseName: '$(releaseName)'
-            overrideValues: 'productionSlot=$(newSlot)'
-            arguments: '--reuse-values'   
+            releaseName: $(releaseName)  
+        - template: ../build/templates/helm_upgrade.yml 
+          parameters:
+            releaseName: $(releaseName)   
+            artifactName:  $(artifactName) 
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'    
+            setValues: 'productionSlot=$(newSlot)'   
 - stage: Finalize
   condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
@@ -118,23 +96,12 @@ stages:
         - template: ../build/templates/read_slots.yml  
           parameters:
             releaseName: $(releaseName) 
-        - task: HelmInstaller@0
-          displayName: 'Install Helm 2.14.3'
-          inputs:
-            helmVersion: 2.14.3
-            checkLatestHelmVersion: false        
-        - task: HelmDeploy@0
-          displayName: 'Remove Staging'
-          inputs:
-            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
-            azureResourceGroup: openhackxmk9rg
-            kubernetesCluster: openhackxmk9aks
-            command: upgrade
-            chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
-            releaseName: '$(releaseName)'
-            overrideValues: '$(newSlot).enabled=false'
-            arguments: '--reuse-values' 
+        - template: ../build/templates/helm_upgrade.yml 
+          parameters:
+            releaseName: $(releaseName)   
+            artifactName:  $(artifactName) 
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'    
+            setValues: '$(newSlot).enabled=false'
       on:
         failure:
           steps:
@@ -154,20 +121,9 @@ stages:
         - template: ../build/templates/read_slots.yml 
           parameters:
             releaseName: $(releaseName) 
-        - task: HelmInstaller@0
-          displayName: 'Install Helm 2.14.3'
-          inputs:
-            helmVersion: 2.14.3
-            checkLatestHelmVersion: false        
-        - task: HelmDeploy@0
-          displayName: 'Rollback Production'
-          inputs:
-            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
-            azureResourceGroup: openhackxmk9rg
-            kubernetesCluster: openhackxmk9aks
-            command: upgrade
-            chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
-            releaseName: '$(releaseName)'
-            overrideValues: 'productionSlot=$(newSlot)'
-            arguments: '--reuse-values' 
+        - template: ../build/templates/helm_upgrade.yml 
+          parameters:
+            releaseName: $(releaseName)   
+            artifactName:  $(artifactName) 
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'    
+            setValues: 'productionSlot=$(newSlot)'
