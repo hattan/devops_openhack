@@ -1,6 +1,11 @@
 variables:
   imageName: 'devopsoh/api-user'
   releaseName : 'api-user'
+  dockerfilePath: 'apis/userprofile/Dockerfile'
+  chartPath: '$(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user'
+  stagingEnvironment: 'UserProfile Staging'
+  productionEnvironment: 'UserProfile Production'
+  artifactName: 'trips'
 
 trigger:
   branches:
@@ -17,34 +22,34 @@ stages:
     pool: 'custom'
     steps:
     - task: Docker@2
-      displayName: build $(imageName) image
+      displayName: build image
       inputs:
         containerRegistry: ACR
         repository: $(imageName)
         command: build
-        Dockerfile: 'apis/userprofile/Dockerfile'
+        Dockerfile: $(dockerfilePath)
     - task: Docker@2
-      displayName: push $(imageName) image to ACR
+      displayName: push image to ACR
       inputs:
         containerRegistry: ACR
         repository: $(imageName)
         command: push      
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
-    - publish: $(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user
-      artifact: trips
+    - publish: $(chartPath)
+      artifact: $(artifactName)
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
 - stage: Staging
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
   - deployment: staging
-    environment: 'UserProfile Staging'
+    environment: $(stagingEnvironment)
     pool: 'custom'
     strategy:
      runOnce:
       deploy:
         steps:
         - download: current
-          artifact: trips 
+          artifact: $(artifactName) 
         - template: templates/read_slots.yml  # Template reference
           parameters:
             releaseName: $(releaseName)         
@@ -61,22 +66,22 @@ stages:
             kubernetesCluster: openhackxmk9aks
             command: upgrade
             chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/trips'
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
             releaseName: '$(releaseName)'
             overrideValues: '$(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'
             arguments: '--reuse-values' 
 - stage: Production
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
   jobs:
-  - deployment: staging
-    environment: 'UserProfile Production'
+  - deployment: production
+    environment: $(productionEnvironment)
     pool: 'custom'
     strategy:
      runOnce:
       deploy:
         steps:
         - download: current
-          artifact: trips 
+          artifact: $(artifactName) 
         - template: templates/read_slots.yml  
           parameters:
             releaseName: $(releaseName)         
@@ -93,7 +98,7 @@ stages:
             kubernetesCluster: openhackxmk9aks
             command: upgrade
             chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/trips'
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
             releaseName: '$(releaseName)'
             overrideValues: 'productionSlot=$(newSlot)'
             arguments: '--reuse-values'   
@@ -108,7 +113,7 @@ stages:
       deploy:
         steps:
         - download: current
-          artifact: trips 
+          artifact: $(artifactName) 
         - template: templates/read_slots.yml  
           parameters:
             releaseName: $(releaseName) 
@@ -125,7 +130,7 @@ stages:
             kubernetesCluster: openhackxmk9aks
             command: upgrade
             chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/trips'
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
             releaseName: '$(releaseName)'
             overrideValues: '$(newSlot).enabled=false'
             arguments: '--reuse-values' 
@@ -144,7 +149,7 @@ stages:
       deploy:
         steps:
         - download: current
-          artifact: trips 
+          artifact: $(artifactName) 
         - template: templates/read_slots.yml  
           parameters:
             releaseName: $(releaseName) 
@@ -161,7 +166,7 @@ stages:
             kubernetesCluster: openhackxmk9aks
             command: upgrade
             chartType: FilePath
-            chartPath: '$(Pipeline.Workspace)/trips'
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
             releaseName: '$(releaseName)'
             overrideValues: 'productionSlot=$(newSlot)'
             arguments: '--reuse-values' 
