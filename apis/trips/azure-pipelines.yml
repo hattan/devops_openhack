@@ -1,0 +1,173 @@
+variables:
+  imageName: 'devopsoh/api-trip'
+  releaseName : 'api-trip'
+  dockerfilePath: 'apis/trips/Dockerfile'
+  chartPath: '$(System.DefaultWorkingDirectory)/apis/trips/charts/mydrive-trips'
+  stagingEnvironment: 'Trips Staging'
+  productionEnvironment: 'Trips Production'
+  finalizeEnvironment: 'Trips Finalize Deployment'
+  artifactName: 'trips'
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - '/apis/trips/*'
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool: 'custom'
+    steps:
+    - task: Docker@2
+      displayName: build image
+      inputs:
+        containerRegistry: ACR
+        repository: $(imageName)
+        command: build
+        Dockerfile: $(dockerfilePath)
+    - task: Docker@2
+      displayName: push image to ACR
+      inputs:
+        containerRegistry: ACR
+        repository: $(imageName)
+        command: push      
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+    - publish: $(chartPath)
+      artifact: $(artifactName)
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+- stage: Staging
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: staging
+    environment: $(stagingEnvironment)
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: $(artifactName) 
+        - template: ../build/templates/read_slots.yml  # Template reference
+          parameters:
+            releaseName: $(releaseName)         
+        - task: HelmInstaller@0
+          displayName: 'Install Helm 2.14.3'
+          inputs:
+            helmVersion: 2.14.3
+            checkLatestHelmVersion: false        
+        - task: HelmDeploy@0
+          displayName: 'Deploy to Staging'
+          inputs:
+            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
+            azureResourceGroup: openhackxmk9rg
+            kubernetesCluster: openhackxmk9aks
+            command: upgrade
+            chartType: FilePath
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
+            releaseName: '$(releaseName)'
+            overrideValues: '$(newSlot).tag=$(Build.BuildId),$(newSlot).enabled=true'
+            arguments: '--reuse-values' 
+- stage: Production
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: production
+    environment: $(productionEnvironment)
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: $(artifactName) 
+        - template: ../build/templates/read_slots.yml 
+          parameters:
+            releaseName: $(releaseName)         
+        - task: HelmInstaller@0
+          displayName: 'Install Helm 2.14.3'
+          inputs:
+            helmVersion: 2.14.3
+            checkLatestHelmVersion: false        
+        - task: HelmDeploy@0
+          displayName: 'Swap Slots'
+          inputs:
+            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
+            azureResourceGroup: openhackxmk9rg
+            kubernetesCluster: openhackxmk9aks
+            command: upgrade
+            chartType: FilePath
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
+            releaseName: '$(releaseName)'
+            overrideValues: 'productionSlot=$(newSlot)'
+            arguments: '--reuse-values'   
+- stage: Finalize
+  condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: cleanup
+    environment: $(finalizeEnvironment)
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: $(artifactName) 
+        - template: ../build/templates/read_slots.yml  
+          parameters:
+            releaseName: $(releaseName) 
+        - task: HelmInstaller@0
+          displayName: 'Install Helm 2.14.3'
+          inputs:
+            helmVersion: 2.14.3
+            checkLatestHelmVersion: false        
+        - task: HelmDeploy@0
+          displayName: 'Remove Staging'
+          inputs:
+            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
+            azureResourceGroup: openhackxmk9rg
+            kubernetesCluster: openhackxmk9aks
+            command: upgrade
+            chartType: FilePath
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
+            releaseName: '$(releaseName)'
+            overrideValues: '$(newSlot).enabled=false'
+            arguments: '--reuse-values' 
+      on:
+        failure:
+          steps:
+          - script: 'echo "rollback"'
+- stage: Rollback
+  condition: and(failed(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: cleanup
+    environment: 'Rollback'
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: $(artifactName) 
+        - template: ../build/templates/read_slots.yml 
+          parameters:
+            releaseName: $(releaseName) 
+        - task: HelmInstaller@0
+          displayName: 'Install Helm 2.14.3'
+          inputs:
+            helmVersion: 2.14.3
+            checkLatestHelmVersion: false        
+        - task: HelmDeploy@0
+          displayName: 'Rollback Production'
+          inputs:
+            azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
+            azureResourceGroup: openhackxmk9rg
+            kubernetesCluster: openhackxmk9aks
+            command: upgrade
+            chartType: FilePath
+            chartPath: '$(Pipeline.Workspace)/$(artifactName)'
+            releaseName: '$(releaseName)'
+            overrideValues: 'productionSlot=$(newSlot)'
+            arguments: '--reuse-values' 
