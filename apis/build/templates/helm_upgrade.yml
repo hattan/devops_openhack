@@ -3,6 +3,7 @@ parameters:
   artifactName: 'artifact'
   chartPath: 'path'
   setValues: 'values'
+  displayName: 'Helm Upgrade'
   
 steps:
 - task: HelmInstaller@0
@@ -11,7 +12,7 @@ steps:
     helmVersion: 2.14.3
     checkLatestHelmVersion: false        
 - task: HelmDeploy@0
-  displayName: 'Swap Slots'
+  displayName: $(displayName)
   inputs:
     azureSubscription: 'OTA-Prod-52 (7bc13e13-9b79-4572-a6c6-2bf5af2e368b)'
     azureResourceGroup: openhackxmk9rg
