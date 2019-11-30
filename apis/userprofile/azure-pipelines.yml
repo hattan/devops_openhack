@@ -51,7 +51,7 @@ stages:
         steps:
         - download: current
           artifact: $(artifactName) 
-        - template: templates/read_slots.yml  # Template reference
+        - template: ../build/templates/read_slots.yml  # Template reference
           parameters:
             releaseName: $(releaseName)         
         - task: HelmInstaller@0
@@ -83,7 +83,7 @@ stages:
         steps:
         - download: current
           artifact: $(artifactName) 
-        - template: templates/read_slots.yml  
+        - template: ../build/templates/read_slots.yml 
           parameters:
             releaseName: $(releaseName)         
         - task: HelmInstaller@0
@@ -115,7 +115,7 @@ stages:
         steps:
         - download: current
           artifact: $(artifactName) 
-        - template: templates/read_slots.yml  
+        - template: ../build/templates/read_slots.yml  
           parameters:
             releaseName: $(releaseName) 
         - task: HelmInstaller@0
@@ -151,7 +151,7 @@ stages:
         steps:
         - download: current
           artifact: $(artifactName) 
-        - template: templates/read_slots.yml  
+        - template: ../build/templates/read_slots.yml 
           parameters:
             releaseName: $(releaseName) 
         - task: HelmInstaller@0
