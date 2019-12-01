@@ -12,7 +12,7 @@ stages:
     releaseName: 'api-user-java'  
     artifactName:  'userjava'
     chartPath: '$(System.DefaultWorkingDirectory)/apis/user-java/charts/mydrive-user-java'   
-    artifactPath: '$(Pipeline.Workspace)/$(artifactName)'
+    artifactPath: '$(Pipeline.Workspace)/userjava'
     imageName: 'devopsoh/api-user-java'
     dockerfilePath: 'apis/user-java/Dockerfile'
     stagingEnvironment: 'UserJava Staging'
