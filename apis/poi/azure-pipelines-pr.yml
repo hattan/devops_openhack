@@ -2,14 +2,6 @@ variables:
   projects: 'apis/poi/**/*.csproj'
   TestProjects: './tests/UnitTests/**/*.csproj'
 
-trigger:
-  branches:
-    exclude:
-    - master
-  paths:
-    include:
-    - '/apis/poi/*'
-
 stages:
 - stage: Build
   jobs:
