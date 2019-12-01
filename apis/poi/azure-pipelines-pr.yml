@@ -2,6 +2,8 @@ variables:
   projects: 'apis/poi/**/*.csproj'
   TestProjects: './tests/UnitTests/**/*.csproj'
 
+trigger: none
+
 stages:
 - stage: Build
   jobs:
