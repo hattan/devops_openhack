@@ -1,6 +1,6 @@
 variables:
   projects: 'apis/poi/**/*.csproj'
-  TestProjects: 'apis/poi/tests/UnitTests/**/*.csproj'
+  TestProjects: './tests/UnitTests/**/*.csproj'
 
 trigger:
   branches:
