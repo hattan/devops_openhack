@@ -1,3 +1,7 @@
+variables:
+  projects: 'apis/poi/**/*.csproj'
+  TestProjects: 'apis/poi/tests/UnitTests/**/*.csproj'
+
 trigger:
   branches:
     include:
@@ -7,15 +11,37 @@ trigger:
     - '/apis/poi/*'
 
 stages:
-- template: ../build/templates/blue_green_stage.yml
-  parameters:
-    releaseName: 'api-poi'  
-    artifactName:  'poi'
-    chartPath: '$(System.DefaultWorkingDirectory)/apis/poi/charts/mydrive-poi'   
-    artifactPath: '$(Pipeline.Workspace)/poi'
-    imageName: 'devopsoh/api-poi'
-    dockerfilePath: 'apis/poi/web/Dockerfile'
-    stagingEnvironment: 'POI Staging'
-    productionEnvironment: 'POI Production'
-    finalizeEnvironment: 'POI Finalize Deployment'
-    buildId: $(Build.BuildId)
+- stage: Build
+  jobs:
+  - job: Build
+    pool: 'custom'
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '2.2.x'
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: restore
+        projects: '$(projects)'
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        projects: '$(projects)'
+        arguments: '--configuration $(BuildConfiguration)'
+    - task: DotNetCoreCLI@2
+      displayName: Test
+      inputs:
+        command: test
+        projects: '$(Parameters.TestProjects)'
+        arguments: '--configuration $(BuildConfiguration)'
+    - task: DotNetCoreCLI@2
+      displayName: Publish
+      inputs:
+        command: publish
+        publishWebProjects: True
+        arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+        zipAfterPublish: True
+
+    
