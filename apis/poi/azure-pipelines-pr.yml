@@ -31,10 +31,9 @@ stages:
         projects: '$(projects)'
         arguments: '--configuration $(BuildConfiguration)'
     - task: DotNetCoreCLI@2
-      displayName: Test
       inputs:
-        command: test
-        projects: '$(Parameters.TestProjects)'
+        command: 'test'
+        projects: 'tests/UnitTests/**/*.csproj'
         arguments: '--configuration $(BuildConfiguration)'
     - task: DotNetCoreCLI@2
       displayName: Publish
@@ -43,5 +42,3 @@ stages:
         publishWebProjects: True
         arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
         zipAfterPublish: True
-
-    
