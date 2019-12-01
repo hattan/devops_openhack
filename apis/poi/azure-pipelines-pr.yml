@@ -31,9 +31,10 @@ stages:
         projects: '$(projects)'
         arguments: '--configuration $(BuildConfiguration)'
     - task: DotNetCoreCLI@2
+      displayName: Test
       inputs:
         command: 'test'
-        projects: 'tests/UnitTests/**/*.csproj'
+        projects: 'apis/poi/tests/UnitTests/UnitTests.csproj'
         arguments: '--configuration $(BuildConfiguration)'
     - task: DotNetCoreCLI@2
       displayName: Publish
