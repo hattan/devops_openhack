@@ -1,0 +1,21 @@
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - '/apis/poi/*'
+
+stages:
+- template: ../build/templates/blue_green_stage.yml
+  parameters:
+    releaseName: 'api-poi'  
+    artifactName:  'poi'
+    chartPath: '$(System.DefaultWorkingDirectory)/apis/poi/charts/mydrive-poi'   
+    artifactPath: '$(Pipeline.Workspace)/poi'
+    imageName: 'devopsoh/api-poi'
+    dockerfilePath: 'apis/poi/web/Dockerfile'
+    stagingEnvironment: 'POI Staging'
+    productionEnvironment: 'POI Production'
+    finalizeEnvironment: 'POI Finalize Deployment'
+    buildId: $(Build.BuildId)
