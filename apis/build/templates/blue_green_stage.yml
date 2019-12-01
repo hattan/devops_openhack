@@ -1,0 +1,123 @@
+parameters:
+  releaseName: 'release' 
+  artifactName: 'artifact'
+  artifactPath: 'artifactPath'
+  imageName: 'image'
+  dockerfilePath: 'docker'
+  chartPath: 'path'
+  stagingEnvironment: 'stagingEnvironment'
+  productionEnvironment: 'productionEnvironment'
+  finalizeEnvironment: 'finalizeEnvironment'
+  buildId: 'BuildId'
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool: 'custom'
+    steps:
+    - task: Docker@2
+      displayName: build image
+      inputs:
+        containerRegistry: ACR
+        repository: ${{ parameters.imageName }}
+        command: build
+        Dockerfile:  ${{ parameters.dockerfilePath }}
+    - task: Docker@2
+      displayName: push image to ACR
+      inputs:
+        containerRegistry: ACR
+        repository: ${{ parameters.imageName }}
+        command: push      
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+    - publish: ${{ parameters.chartPath }}
+      artifact: ${{ parameters.artifactName }}
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+- stage: Staging
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: staging
+    environment: ${{ parameters.stagingEnvironment }} 
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: ${{ parameters.artifactName }}   
+        - template: read_slots.yml 
+          parameters:
+            releaseName: ${{ parameters.releaseName }}   
+        - template: helm_upgrade.yml 
+          parameters:
+            releaseName: ${{ parameters.releaseName }}    
+            artifactName:  ${{ parameters.artifactName }}   
+            chartPath: '${{ parameters.artifactPath }}'    
+            setValues: '$(newSlot).tag=${{ parameters.buildId }},$(newSlot).enabled=true'     
+- stage: Production
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: production
+    environment: ${{ parameters.productionEnvironment }} 
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: ${{ parameters.artifactName }}  
+        - template: read_slots.yml 
+          parameters:
+            releaseName: ${{ parameters.releaseName }}   
+        - template: helm_upgrade.yml 
+          parameters:
+            releaseName: ${{ parameters.releaseName }}    
+            artifactName:   ${{ parameters.artifactName }} 
+            chartPath: '${{ parameters.artifactPath }}'   
+            setValues: 'productionSlot=$(newSlot)'   
+- stage: Finalize
+  condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: cleanup
+    environment: ${{ parameters.finalizeEnvironment }} 
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: ${{ parameters.artifactName }} 
+        - template: read_slots.yml  
+          parameters:
+            releaseName: ${{ parameters.releaseName }} 
+        - template: helm_upgrade.yml 
+          parameters:
+            releaseName: ${{ parameters.releaseName }}   
+            artifactName: ${{ parameters.artifactName }}  
+            chartPath: '${{ parameters.artifactPath }}'   
+            setValues: '$(newSlot).enabled=false'
+      on:
+        failure:
+          steps:
+          - script: 'echo "rollback"'
+- stage: Rollback
+  condition: and(failed(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+  jobs:
+  - deployment: cleanup
+    environment: 'Rollback'
+    pool: 'custom'
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - download: current
+          artifact: ${{ parameters.artifactName }} 
+        - template: read_slots.yml 
+          parameters:
+            releaseName: ${{ parameters.releaseName }} 
+        - template: helm_upgrade.yml 
+          parameters:
+            releaseName: ${{ parameters.releaseName }}   
+            artifactName:  ${{ parameters.artifactName }} 
+            chartPath: '${{ parameters.artifactPath }}'   
+            setValues: 'productionSlot=$(newSlot)'
