@@ -9,13 +9,13 @@ trigger:
 stages:
 - template: ../build/templates/blue_green_stage.yml
   parameters:
-    releaseName: 'api-user'  
-    artifactName:  'trips'
-    chartPath: '$(System.DefaultWorkingDirectory)/apis/userprofile/charts/mydrive-user'   
+    releaseName: 'api-user-java'  
+    artifactName:  'userjava'
+    chartPath: '$(System.DefaultWorkingDirectory)/apis/user-java/charts/mydrive-user-java'   
     artifactPath: '$(Pipeline.Workspace)/$(artifactName)'
-    imageName: 'devopsoh/api-user'
-    dockerfilePath: 'apis/userprofile/Dockerfile'
-    stagingEnvironment: 'UserProfile Staging'
-    productionEnvironment: 'UserProfile Production'
-    finalizeEnvironment: 'UserProfile Finalize Deployment'
+    imageName: 'devopsoh/api-user-java'
+    dockerfilePath: 'apis/user-java/Dockerfile'
+    stagingEnvironment: 'UserJava Staging'
+    productionEnvironment: 'UserJava Production'
+    finalizeEnvironment: 'UserJava Finalize Deployment'
     buildId: $(Build.BuildId)
